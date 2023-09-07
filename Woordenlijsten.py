@@ -1,4 +1,3 @@
-
 ###IMPORTS###
 import customtkinter as ctk
 import random
@@ -35,11 +34,11 @@ standaardlijst = {
 def promptvoordracht_en_controle():
     # Deze line geeft een prompt door een random key te kiezen uit een lijst met keys van de termenlijst
     prompt = random.choice(list(termenlijst.keys()))
-    print("Wat is de vertaling van: ",prompt)
+    print("Wat is de vertaling van:",prompt)
     antwoord = input()
     # Deze line checkt of het opgegeven antwoord overeenkomt met het antwoord (value) 
     # die gekoppeld staat aan het prompt in de termenlijst 
-    if antwoord == termenlijst[prompt]:
+    if antwoord.title() == termenlijst[prompt]:
         print('Correct')
     else:
         print('Incorrect')
@@ -48,6 +47,7 @@ def promptvoordracht_en_controle():
 def main():
     global termenlijst
     termenlijst = standaardlijst
-    promptvoordracht_en_controle()
+    for key in termenlijst:
+        promptvoordracht_en_controle()
 
 main()

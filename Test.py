@@ -1,105 +1,159 @@
-"""
-Author: Andy Wicks
-Code can be found at: https://lyw4.life/Resources/python.php
-Date started: Mon,  19 Oct 2020
-Version: 0.0
-Purposes:
-    - To explore how frames are swapped to create the 'many windows' effect.
-    Reference: https://tkdocs.com/tutorial/grid.html
-"""
-import tkinter as tk             # This has all the code for GUIs.
-import tkinter.font as font      # This lets us use different fonts.
+###IMPORTS###
+import customtkinter as ctk
+from tkinter import messagebox
+import random
+import pickle
+
+###VARIABELEN###
+with open("account_database.pkl","rb") as fp: #Opent de account database
+    global database
+    database = pickle.load(fp) #Haalt de database op en update die
+global standaardlijst
+standaardlijst = {
+    'Een':'One',
+    'Twee':'Two',
+    'Drie':'Three',
+    'Vier':'Four',
+    'Vijf':'Five',
+    'Zes':'Six',
+    'Zeven':'Seven',
+    'Acht':'Eight',
+    'Negen':'Nine',
+    'Tien':'Ten',
+    'Elf':'Eleven',
+    'Twaalf':'Twelve',
+    'Dertien':'Thirteen',
+    'Veertien':'Fourteen',
+    'Vijftien':'Fifteen',
+    'Zestien':'Sixteen',
+    'Zeventien':'Seventeen',
+    'Achttien':'Eighteen',
+    'Negentien':'Nineteen',
+    'Twintig':'Twenty',
+}
+
+###COMMANDO'S###
+
+def login(): #Bij login
+    print("Test")
+    gebruikersnaam = str(entry1.get()) #Haal gebruikersnaam op
+    wachtwoord = str(entry2.get()) #Haal wachtwoord op
+    if gebruikersnaam in database: #Als de gebruikersnaam in de database staat...
+        if wachtwoord == database[gebruikersnaam]: #Als het wachtwoord klopt...
+            change_to_next() #Login
+        else:
+            messagebox.showerror('Python Error', 'Error: Wrong password')
+    else: #Als de gebruikersnaam niet bestaat...
+        messagebox.showerror('Python Error', 'Error: Account not found, wrong username')
+
+def registreer(): #Wordt geactiveerd bij registratie
+    gebruikersnaam = str(entry1.get()) #Haal gebruikersnaam op
+    wachtwoord = str(entry2.get()) #Haal wachtwoord op
+    if gebruikersnaam not in database: #Als de gebruikersnaam nog niet in gebruik is
+        database.update({gebruikersnaam:wachtwoord}) #Voeg naam en wachtwoordcombi toe aan database
+        print(database)
+        save_database()
+    else: #Als de gebruikersnaam al in de database staat
+        messagebox.showerror('Python Error', 'Error: Username already in use.') #Stuur error
+
+def change_to_next():
+    inlogscreen.destroy()
+    next =  ctk.CTkFrame(root)
+    next.pack(fill='both',expand=True)
+    prompt = random.choice(list(termenlijst.keys()))
+    hallo = ctk.CTkLabel(master=next, text=f"Wat is de vertaling van: {prompt}")
+    hallo.pack(pady=12, padx=10)
+    global antwoord
+    antwoord = ctk.CTkEntry(master=next, placeholder_text="Gebruikersnaam")
+    antwoord.pack(pady=12, padx=10)
+    root.mainloop()
+
+def verwijder_account():
+    gebruikersnaam = str(entry1.get()) #Haal gebruikersnaam op
+    if gebruikersnaam in database:
+        wachtwoord = str(entry2.get()) #Haal wachtwoord op
+        if wachtwoord == database[gebruikersnaam]:
+            del database[gebruikersnaam]
+            print(f'Account {gebruikersnaam} is verwijderd!')
+            save_database()
+        else:
+            messagebox.showerror('Python Error', 'Error: Wrong password.') #Stuur error
+    else:
+        messagebox.showerror('Python Error', 'Error: Username not in database.') #Stuur error
+
+def colorswitch(choice): #Als het thema veranderd moet worden
+    print("combobox dropdown clicked:", choice)
+    ctk.set_appearance_mode(choice) #Verander thema naar doorgegeven keuze
+
+def save_database(): #Slaat de database op
+    with open('account_database.pkl', 'wb') as fp: #Sla de nieuwe database op in account_database.pkl
+        pickle.dump(database, fp)
+        print('dictionary saved successfully to file')
 
 
-def center_window_on_screen():
-    """
-    This centres the window when it is not maximised.  It
-    uses the screen and window height and width variables
-    defined in the program below.
-    :return: Nothing
-    """
-    x_cord = int((screen_width/2) - (width/2))
-    y_cord = int((screen_height/2) - (height/2))
-    root.geometry("{}x{}+{}+{}".format(width, height, x_cord, y_cord))
+###SCHERMEN###
+def inlogscherm():
+    frame = ctk.CTkFrame(master=root)
+    frame.pack(pady=20, padx=60, fill="both", expand=True)
+    global inlogscreen
+    inlogscreen =  frame
+
+    label = ctk.CTkLabel(master=frame, text="Login System")
+    label.pack(pady=12, padx=10)
+    global entry1
+    entry1 = ctk.CTkEntry(master=frame, placeholder_text="Gebruikersnaam")
+    entry1.pack(pady=12, padx=10)
+    global entry2
+    entry2 = ctk.CTkEntry(master=frame, placeholder_text="Wachtwoord", show="•")
+    entry2.pack(pady=12, padx=10)
+
+    registreerknop = ctk.CTkButton(master=frame, text="Registreren", command=registreer)
+    registreerknop.pack(pady=12, padx=10)
+
+    button = ctk.CTkButton(master=frame, text="Inloggen", command=login)
+    button.pack(pady=12, padx=10)
+
+    verwijderknop = ctk.CTkButton(master=frame, text="Verwijder Account", command=verwijder_account)
+    verwijderknop.pack(pady=12, padx=10)
 
 
-def change_to_work():
-    """
-    This function swaps from the quiz
-    frame to the work frame.
-    :return: Nothing
-    """
-    quiz_frame.forget()
-    work_frame.pack(fill='both', expand=1)
+    combobox = ctk.CTkComboBox(master=frame, values=["Dark", "Light", "System"],command=colorswitch)
+    combobox.pack(padx=12, pady=10)
+    combobox.set("Dark")
 
+    checkbox = ctk.CTkCheckBox(master=frame, text="Houd mij ingelogd")
+    checkbox.pack(pady=12, padx=10)
 
-def change_to_quiz():
-    """
-    This function swaps from the work
-    frame to the quiz frame.
-    :return: Nothing
-    """
-    quiz_frame.pack(fill='both', expand=1)
-    work_frame.forget()
+def main():
+    ctk.set_appearance_mode("System")
+    ctk.set_default_color_theme("green")
+    global root
+    root = ctk.CTk()
+    root.geometry("1366x768")
+    global termenlijst
+    termenlijst = standaardlijst
+    inlogscherm()
+    root.mainloop()
+ 
+main()
 
+###FUNCTIES###
 
-# Now we get to the program itself:-
-# Let's set up the window ...
-root = tk.Tk()
-root.title("My Work - Swapping frames")
-root.configure(bg='lightyellow')
-# Set the icon used for your program
+# Deze functie draagt de gebruiker het prompt voor, en controleert of het inguvelde antwoord overeenkomt
+# met de betekenis die als value is ingevuld bij de bijbehorende key in de achtieve termenlijst.
+def promptvoordracht_en_controle():
+    # Deze line geeft een prompt door een random key te kiezen uit een lijst met keys van de termenlijst
+    prompt = random.choice(list(termenlijst.keys()))
+    print("Wat is de vertaling van:",prompt)
+    antwoord = input()
+    # Deze line checkt of het opgegeven antwoord overeenkomt met het antwoord (value) 
+    # die gekoppeld staat aan het prompt in de termenlijst 
+    if antwoord.title() == termenlijst[prompt]:
+        print('Correct')
+    else:
+        print('Incorrect')
 
-width, height = 500, 400
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-center_window_on_screen()
+def mainf():
 
-# Here, we create two frames of which only
-# one will be visible at a time.
-quiz_frame = tk.Frame(root)
-work_frame = tk.Frame(root)
-
-# Let's create the fonts that we need.
-font_large = font.Font(family='Georgia',
-                       size='24',
-                       weight='bold')
-font_small = font.Font(family='Georgia',
-                       size='12')
-
-# The widgets needed for the quiz frame.
-
-
-# Next, comes the heading for this frame.
-lbl_heading_quiz = tk.Label(quiz_frame,
-                            text='This is the quiz frame',
-                            font=font_large)
-lbl_heading_quiz.pack(pady=20)
-
-# And finally, the button to swap between the frames.
-btn_change_to_work = tk.Button(quiz_frame,
-                               text='Change to work',
-                               font=font_small,
-                               command=change_to_work)
-btn_change_to_work.pack(pady=20)
-
-# The widgets needed for the work frame.
-# These are only being used in this example
-# to show that both frames are working as
-# expected.
-
-# Finally, we need the button to
-# swap back to the quiz frame.
-btn_change_to_quiz = tk.Button(work_frame,
-                               font=font_small,
-                               text='Change to quiz',
-                               command=change_to_quiz)
-btn_change_to_quiz.pack(pady=20)
-
-# Only the quiz frame needs to be shown
-# when the program starts.  The work frame
-# will only appear when the Change button
-# is clicked.
-quiz_frame.pack(fill='both', expand=1)
-
-root.mainloop()
+    for key in termenlijst:
+        promptvoordracht_en_controle()
